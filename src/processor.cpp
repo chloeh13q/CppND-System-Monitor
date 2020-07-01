@@ -56,6 +56,6 @@ float Processor::Utilization() {
     total = Idle + nonidle;
     totalDiff = total - prevTotal;
     idleDiff = Idle - prevIdle;
-    cpu = (totalDiff - idleDiff) / totalDiff;
+    cpu = (totalDiff - idleDiff) / (totalDiff + 0.0001);
     return cpu;
 }
