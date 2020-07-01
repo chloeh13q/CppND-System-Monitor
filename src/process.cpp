@@ -5,7 +5,6 @@
 #include <vector>
 #include <fstream>
 #include <regex>
-#include <iostream>
 
 #include "process.h"
 #include "linux_parser.h"
@@ -35,7 +34,7 @@ float Process::CpuUtilization() {
     long starttime = LinuxParser::UpTime(pid_);
     long seconds = uptime - starttime / sysconf(_SC_CLK_TCK);
     float value = totaltime / sysconf(_SC_CLK_TCK) / seconds;
-    return 100 * value;
+    return value;
 }
 
 // Return the command that generated this process
@@ -60,7 +59,7 @@ long int Process::UpTime() {
 
 // Overload the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& a) const {
-    if (cpu_ < a.cpu_) {
+    if (std::stol(ram_) < std::stol(a.ram_)) {
         return true;
     }
     return false;
