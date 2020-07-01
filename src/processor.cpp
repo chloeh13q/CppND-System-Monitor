@@ -1,14 +1,15 @@
 #include <string>
-#include <fstream>
-#include <regex>
+#include <vector>
 #include <chrono>
 #include <thread>
 
 #include "processor.h"
+#include "linux_parser.h"
 
 using std::to_string;
 using std::string;
 using std::stoi;
+using std::vector;
 
 void Processor::UpdatePreviousData() {
     Processor::puser = Processor::user;
@@ -21,39 +22,31 @@ void Processor::UpdatePreviousData() {
     Processor::psteal = Processor::steal;
 }
 
-void Processor::UpdateData(int data[8]) {
-    Processor::user = data[0];
-    Processor::nice = data[1];
-    Processor::system = data[2];
-    Processor::idle = data[3];
-    Processor::iowait = data[4];
-    Processor::irq = data[5];
-    Processor::softirq = data[6];
-    Processor::steal = data[7];
+void Processor::UpdateData(vector<string> data) {
+    Processor::steal = stof(data.back());
+    data.pop_back();
+    Processor::softirq = stof(data.back());
+    data.pop_back();
+    Processor::irq = stof(data.back());
+    data.pop_back();
+    Processor::iowait = stof(data.back());
+    data.pop_back();
+    Processor::idle = stof(data.back());
+    data.pop_back();
+    Processor::system = stof(data.back());
+    data.pop_back();
+    Processor::nice = stof(data.back());
+    data.pop_back();
+    Processor::user = stof(data.back());
 }
 
-void Processor::UtilizationHelper() {
-    string line;
-    string value[8];
-    string s;
-    int data[8];
-    UpdatePreviousData();
-    std::ifstream stream("/proc/stat");
-    if (stream.is_open()) {
-        getline(stream, line);
-        std::istringstream linestream(line);
-        linestream >> s;
-        for (int i = 0; i < 8; i++) {
-            linestream >> value[i];
-            data[i] = stoi(value[i]);
-        }
-        UpdateData(data);
-    }
-}
 
 // Return the aggregate CPU utilization
 float Processor::Utilization() {
-    Processor::UtilizationHelper();
+    Processor::UpdatePreviousData();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    vector<string> data = LinuxParser::CpuUtilization();
+    Processor::UpdateData(data);
     float cpu;
     prevIdle = pidle + piowait;
     Idle = idle + iowait;

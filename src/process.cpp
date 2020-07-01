@@ -16,10 +16,10 @@ using std::vector;
 
 Process::Process(int pid) {
     pid_ = pid;
-    //user_ = Process::User();
-    //command_ = Process::Command();
-    // cpu_ = Process::CpuUtilization();
-    //ram_ = Process::Ram();
+    user_ = Process::User();
+    command_ = Process::Command();
+    cpu_ = Process::CpuUtilization();
+    ram_ = Process::Ram();
     uptime_ = Process::UpTime();
 }
 
@@ -28,73 +28,37 @@ int Process::Pid() {
     return pid_;
 }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
-
-// TODO: Return the command that generated this process
-string Process::Command() {
-    string line;
-    std::ifstream stream(LinuxParser::kProcDirectory + to_string(pid_) + LinuxParser::kCmdlineFilename);
-    if (stream.is_open()) {
-        getline(stream, line);
-    }
-    return line;
+// Return this process's CPU utilization
+float Process::CpuUtilization() {
+    long uptime = LinuxParser::UpTime();
+    long totaltime = LinuxParser::ActiveJiffies(pid_);
+    long starttime = LinuxParser::UpTime(pid_);
+    long seconds = uptime - starttime / sysconf(_SC_CLK_TCK);
+    float value = totaltime / sysconf(_SC_CLK_TCK) / seconds;
+    return 100 * value;
 }
 
-// TODO: Return this process's memory utilization
+// Return the command that generated this process
+string Process::Command() {
+    return LinuxParser::Command(pid_);
+}
+
+// Return this process's memory utilization
 string Process::Ram() {
-    string line;
-    string s, ram;
-    int value;
-    std::ifstream stream(LinuxParser::kProcDirectory + to_string(pid_) + LinuxParser::kStatusFilename);
-    if (stream.is_open()) {
-        getline(stream, line);
-        //std::cout << line << std::endl;
-        std::istringstream linestream(line);
-        linestream >> s;
-        while (linestream.peek() != EOF && s != "VmSize:") {
-            getline(stream, line);
-            std::istringstream linestream(line);
-            linestream >> s;
-        }
-        if (linestream.peek() != EOF) {
-            std::istringstream ramstream(line);
-            linestream >> s >> ram;
-            
-            //std::cout << ram << std::endl;
-            //value = std::stoi(ram);
-            //value /= 1000;
-            //ram = to_string(value);
-        }
-    }
-    return ram;
+    return LinuxParser::Ram(pid_);
 }
 
 // Return the user (name) that generated this process
 string Process::User() {
-    string line;
-    string s;
-    string user;
-    std::ifstream stream(LinuxParser::kProcDirectory + to_string(pid_) + LinuxParser::kStatusFilename);
-    if (stream.is_open()) {
-        getline(stream, line);
-        std::istringstream linestream(line);
-        linestream >> s;
-        while (s != "Uid:") {
-            getline(stream, line);
-            std::istringstream linestream(line);
-            linestream >> s;
-        }
-        std::istringstream userstream(line);
-        userstream >> s >> user;
-    }
-    return user;
+    return LinuxParser::User(pid_);
 }
 
-// TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return 0; }
+// Return the age of this process (in seconds)
+long int Process::UpTime() {
+    return LinuxParser::UpTime(pid_) / sysconf(_SC_CLK_TCK);
+}
 
-// TODO: Overload the "less than" comparison operator for Process objects
+// Overload the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& a) const {
     if (cpu_ < a.cpu_) {
         return true;
