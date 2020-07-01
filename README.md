@@ -6,7 +6,7 @@ System Monitor Project in the Object Oriented Programming Course of the [Udacity
 
 ## System
 
-This program is designed to work only on Linux systems. The program mimics htop (https://hisham.hm/htop/) and displays a dynamically updated interface which includes all relevant information about the system and lists the most memory-intensive processes.
+This program is designed to work only on Linux systems. It mimics htop (https://hisham.hm/htop/) and displays a dynamically updated interface which includes all relevant information about the system and lists the most memory-intensive processes.
 
 ## ncurses
 
