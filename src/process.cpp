@@ -32,9 +32,9 @@ float Process::CpuUtilization() {
     long uptime = LinuxParser::UpTime();
     long totaltime = LinuxParser::ActiveJiffies(pid_);
     long starttime = LinuxParser::UpTime(pid_);
-    long seconds = uptime - starttime / sysconf(_SC_CLK_TCK);
+    float seconds = uptime - starttime / sysconf(_SC_CLK_TCK);
     float value = totaltime / sysconf(_SC_CLK_TCK) / seconds;
-    return value;
+    return 1.0 * value;
 }
 
 // Return the command that generated this process
@@ -59,7 +59,7 @@ long int Process::UpTime() {
 
 // Overload the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& a) const {
-    if (std::stol(ram_) < std::stol(a.ram_)) {
+    if (cpu_ < a.cpu_) {
         return true;
     }
     return false;
