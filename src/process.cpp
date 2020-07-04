@@ -29,12 +29,16 @@ int Process::Pid() {
 
 // Return this process's CPU utilization
 float Process::CpuUtilization() {
-    long uptime = LinuxParser::UpTime();
-    long totaltime = LinuxParser::ActiveJiffies(pid_);
-    long starttime = LinuxParser::UpTime(pid_);
-    float seconds = uptime - starttime / sysconf(_SC_CLK_TCK);
-    float value = totaltime / sysconf(_SC_CLK_TCK) / seconds;
+  long uptime = LinuxParser::UpTime();
+  long totaltime = LinuxParser::ActiveJiffies(pid_);
+  long starttime = LinuxParser::UpTime(pid_);
+  float seconds = uptime - starttime / sysconf(_SC_CLK_TCK);
+  float value = totaltime / sysconf(_SC_CLK_TCK) / seconds;
+  if (value > 0 && value < 1) {
     return 1.0 * value;
+  } else{
+    return 0.0;
+  }
 }
 
 // Return the command that generated this process
