@@ -39,7 +39,13 @@ float Process::CpuUtilization() {
 
 // Return the command that generated this process
 string Process::Command() {
-    return LinuxParser::Command(pid_);
+  string command = LinuxParser::Command(pid_);
+  // display only the first 40 characters of a command to avoid overflowing strings
+  if (command.length() > 40) {
+    command = command.substr(0, 40);
+    command += "...";
+  }
+  return command;
 }
 
 // Return this process's memory utilization
@@ -54,7 +60,9 @@ string Process::User() {
 
 // Return the age of this process (in seconds)
 long int Process::UpTime() {
-    return LinuxParser::UpTime(pid_) / sysconf(_SC_CLK_TCK);
+    return LinuxParser::UpTime() - LinuxParser::UpTime(pid_) / sysconf(_SC_CLK_TCK);
+  // Per Linux documentation, starttime = the time the process started after system boot
+  // Starttime is expressed in clock ticks for Linux 2.6 and after
 }
 
 // Overload the "less than" comparison operator for Process objects
